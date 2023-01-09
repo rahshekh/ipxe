@@ -351,7 +351,7 @@ static void ionic_poll(struct net_device *netdev)
 	// Check for Notify events
 	ionic_poll_notifyq(netdev->priv);
 	ionic->poll_cnt++;
-	if ((ionic->poll_cnt % 1000000) == 1 ) {
+	if ((ionic->poll_cnt % 100000) == 1 ) {
 	        dbg_printf("%s: Ionic POLL(%ld) tx_cnt: %ld tx_done:%ld tx_doorbell:%ld tx_defer: %ld rx_alloc_iob_fail:%ld rx_done:%ld "
 	                "rx_fill_cnt:%ld  rx_errs: %ld, rx_desc_avail:%d tx_desc_avail:%d mtu:%ld\n",
 	                netdev->name, ionic->poll_cnt, ionic->tx_cnt, ionic->tx_done, ionic->tx_doorbell_cnt,
