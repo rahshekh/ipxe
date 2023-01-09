@@ -104,6 +104,9 @@ struct cache_discarder {
 #define CACHE_NORMAL	02	/**< Items with a normal replacement cost */
 #define CACHE_EXPENSIVE	03	/**< Items with a high replacement cost */
 
+void mdumpfree ( void );
+void mdumpstats ( void );
+
 /** @} */
 
 #endif /* _IPXE_MALLOC_H */

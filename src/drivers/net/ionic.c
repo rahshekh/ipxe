@@ -207,6 +207,29 @@ static void ionic_close(struct net_device *netdev)
 	struct ionic *ionic = netdev->priv;
 
 	DBG_OPROM_INFO(ionic, "\n");
+	struct queue *rxq = &ionic->lif->rxqcqs->q;
+	struct queue *txq = &ionic->lif->txqcqs->q;
+	dbg_printf("Ionic CLOSE  rx_alloc_iob fail_cnt:%ld rx_done:%ld  rx_fill_cnt:%ld rx_errs: %ld "
+	        "poll_cnt:%ld rx_desc_avail:%d tx_desc_availa:%d\n",
+	        ionic->fail_count,
+	        ionic->rx_done,
+	        ionic->rx_fill_cnt, ionic->rx_errs,
+	        ionic->poll_cnt, ionic_q_space_avail(rxq), ionic_q_space_avail(txq)  );
+	dbg_printf("Ionic CLOSE tx_count:%ld tx_doorbell_cnt:%ld tx_defer_cnt:%ld tx_done:%ld\n",
+	        ionic->tx_cnt,
+	        ionic->tx_doorbell_cnt,
+	        ionic->tx_defer_cnt,
+	        ionic->tx_done);
+	dbg_printf("Ionic Close MTU sixe: %ld\n", netdev->mtu);
+	ionic->tx_cnt = 0;
+	ionic->tx_doorbell_cnt= 0;
+	ionic->tx_defer_cnt = 0;
+	ionic->tx_done = 0;
+	ionic->rx_fill_cnt = 0;
+	ionic->rx_errs= 0;
+	ionic->rx_done = 0;
+	ionic->fail_count = 0;
+	ionic->poll_cnt = 0;
 
 	ionic_stop_queues(ionic);
 	ionic_stop_device(ionic);
@@ -229,9 +252,10 @@ static int ionic_transmit(struct net_device *netdev,
 
 	if (!ionic_q_has_space(txq, 1)) {
 		DBG_OPROM_ERR(ionic, "no more desc available the txq is full\n");
+		ionic->tx_defer_cnt++;
 		return -ENOBUFS;
 	}
-
+	ionic->tx_cnt++;
 	// fill the descriptor
 	if (ionic->lif->vlan_en) {
 		flags = IONIC_TXQ_DESC_FLAG_VLAN;
@@ -259,7 +283,7 @@ static int ionic_transmit(struct net_device *netdev,
 		.p_index = txq->head->index,
 	};
 	writeq(*(u64 *)&db, txq->db);
-
+	ionic->tx_doorbell_cnt++;
 	return 0;
 }
 
@@ -288,6 +312,8 @@ static int ionic_get_fw_status(struct ionic *ionic)
 static void ionic_poll(struct net_device *netdev)
 {
 	struct ionic *ionic = netdev->priv;
+	struct queue *rxq = &ionic->lif->rxqcqs->q;
+	struct queue *txq = &ionic->lif->txqcqs->q;
 	u8 fw_running;
 	u8 change;
 	u16 mtu;
@@ -324,6 +350,15 @@ static void ionic_poll(struct net_device *netdev)
 
 	// Check for Notify events
 	ionic_poll_notifyq(netdev->priv);
+	ionic->poll_cnt++;
+	if ((ionic->poll_cnt % 1000000) == 1 ) {
+	        dbg_printf("%s: Ionic POLL(%ld) tx_cnt: %ld tx_done:%ld tx_doorbell:%ld tx_defer: %ld rx_alloc_iob_fail:%ld rx_done:%ld "
+	                "rx_fill_cnt:%ld  rx_errs: %ld, rx_desc_avail:%d tx_desc_avail:%d mtu:%ld\n",
+	                netdev->name, ionic->poll_cnt, ionic->tx_cnt, ionic->tx_done, ionic->tx_doorbell_cnt,
+	                ionic->tx_defer_cnt, ionic->fail_count, ionic->rx_done,
+	                ionic->rx_fill_cnt, ionic->rx_errs, ionic_q_space_avail(rxq),
+	                ionic_q_space_avail(txq), netdev->mtu);
+	}
 }
 
 /** Skeleton network device operations */

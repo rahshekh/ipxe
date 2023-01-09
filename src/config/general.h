@@ -139,9 +139,9 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 #define LOGIN_CMD		/* Login command */
 #define SYNC_CMD		/* Sync command */
 #define SHELL_CMD		/* Shell command */
-//#define NSLOOKUP_CMD		/* DNS resolving command */
-//#define TIME_CMD		/* Time commands */
-//#define DIGEST_CMD		/* Image crypto digest commands */
+#define NSLOOKUP_CMD		/* DNS resolving command */
+#define TIME_CMD		/* Time commands */
+#define DIGEST_CMD		/* Image crypto digest commands */
 //#define LOTEST_CMD		/* Loopback testing commands */
 //#define VLAN_CMD		/* VLAN commands */
 //#define PXE_CMD		/* PXE commands */
@@ -150,12 +150,12 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 //#define IMAGE_TRUST_CMD	/* Image trust management commands */
 //#define PCI_CMD		/* PCI commands */
 //#define PARAM_CMD		/* Form parameter commands */
-//#define NEIGHBOUR_CMD		/* Neighbour management commands */
-//#define PING_CMD		/* Ping command */
+#define NEIGHBOUR_CMD		/* Neighbour management commands */
+#define PING_CMD		/* Ping command */
 //#define CONSOLE_CMD		/* Console command */
-//#define IPSTAT_CMD		/* IP statistics commands */
+#define IPSTAT_CMD		/* IP statistics commands */
 //#define PROFSTAT_CMD		/* Profiling commands */
-//#define NTP_CMD		/* NTP commands */
+#define NTP_CMD		/* NTP commands */
 //#define CERT_CMD		/* Certificate management commands */
 //#define IMAGE_MEM_CMD		/* Read memory command */
 #define IMAGE_ARCHIVE_CMD	/* Archive image management commands */
@@ -194,7 +194,8 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 #undef	BUILD_ID		/* Include a custom build ID string,
 				 * e.g "test-foo" */
 #undef	NULL_TRAP		/* Attempt to catch NULL function calls */
-#undef	GDBSERIAL		/* Remote GDB debugging over serial */
+//#undef	GDBSERIAL		/* Remote GDB debugging over serial */
+#define	GDBSERIAL
 #undef	GDBUDP			/* Remote GDB debugging over UDP
 				 * (both may be set) */
 //#define EFI_DOWNGRADE_UX	/* Downgrade UEFI user experience */

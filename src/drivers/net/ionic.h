@@ -298,6 +298,15 @@ struct ionic {
 	u8 qs_running;
 	u8 fw_running;
 	u64 last_eid;
+	unsigned long tx_defer_cnt;
+	unsigned long poll_cnt;
+	unsigned long tx_cnt;
+	unsigned long tx_doorbell_cnt;
+	unsigned long fail_count;
+	unsigned long rx_fill_cnt;
+	unsigned long rx_done;
+	unsigned long rx_errs;
+	unsigned long tx_done;
 	u8  oprom_msg_to_nic;
 	u8  oprom_debug_enable;
 };

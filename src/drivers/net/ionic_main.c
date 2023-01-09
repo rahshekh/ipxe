@@ -1650,6 +1650,7 @@ void ionic_rx_fill(struct net_device *netdev, u16 length)
 		// Allocate I/O buffer
 		iobuf = alloc_iob(length);
 		if (!iobuf) {
+			ionic->fail_count++;
 			return;
 		}
 		desc = rxq->head->desc;
@@ -1666,6 +1667,7 @@ void ionic_rx_fill(struct net_device *netdev, u16 length)
 			.p_index = rxq->head->index,
 		};
 		writeq(*(u64 *)&db, rxq->db);
+		ionic->rx_fill_cnt++;
 	}
 }
 
@@ -1704,9 +1706,11 @@ void ionic_poll_rx(struct net_device *netdev)
 			desc = rxq->tail->desc;
 			iob_put(iobuf, desc->len);
 			netdev_rx_err(netdev, iobuf, -EIO);
+			ionic->rx_errs++;
 		} else {
 			iob_put(iobuf, comp->len);
 			netdev_rx(netdev, iobuf);
+			ionic->rx_done++;
 		}
 
 		// update the q tail index;
@@ -1747,6 +1751,7 @@ void ionic_poll_tx(struct net_device *netdev)
 			// update the q tail index;
 			index = txq->tail->index;
 			txq->tail = txq->tail->next;
+			ionic->tx_done++;
 		} while(index != comp->comp_index);
 
 		// update the comp struct

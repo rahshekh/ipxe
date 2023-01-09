@@ -99,6 +99,12 @@ size_t usedmem;
 /** Maximum amount of used memory */
 size_t maxusedmem;
 
+/** Low memory */
+size_t lowmem;
+
+/** cache discard */
+size_t cache_discard;
+
 /**
  * Heap size
  *
@@ -242,6 +248,8 @@ static inline void check_blocks ( void ) {
 static unsigned int discard_cache ( void ) {
 	struct cache_discarder *discarder;
 	unsigned int discarded;
+
+	cache_discard++;
 
 	for_each_table_entry ( discarder, CACHE_DISCARDERS ) {
 		discarded = discarder->discard();
@@ -390,6 +398,21 @@ void * alloc_memblock ( size_t size, size_t align, size_t offset ) {
  done:
 	check_blocks();
 	valgrind_make_blocks_noaccess();
+
+#if 0
+	/* check for allocation failures */
+	if (ptr == NULL) {
+		/* check for fragmemtation case */
+		if (freemem >= actual_size) {
+			dbg_printf("size %ld actual_size %ld\n", size, actual_size);
+			mdumpfree();
+		} else {
+			lowmem++;
+		}
+		mdumpstats();
+	}
+#endif
+
 	return ptr;
 }
 
@@ -689,8 +712,6 @@ struct startup_fn heap_startup_fn __startup_fn ( STARTUP_EARLY ) = {
 	.shutdown = shutdown_cache,
 };
 
-#if 0
-#include <stdio.h>
 /**
  * Dump free block list
  *
@@ -698,10 +719,18 @@ struct startup_fn heap_startup_fn __startup_fn ( STARTUP_EARLY ) = {
 void mdumpfree ( void ) {
 	struct memory_block *block;
 
-	printf ( "Free block list:\n" );
+	dbg_printf ( "free block list:\n" );
 	list_for_each_entry ( block, &free_blocks, list ) {
-		printf ( "[%p,%p] (size %#zx)\n", block,
+		dbg_printf ( "[%p,%p] (size %#zx)\n", block,
 			 ( ( ( void * ) block ) + block->size ), block->size );
 	}
 }
-#endif
+
+/**
+ * Dump stats
+ * 
+ */
+void mdumpstats ( void ) {
+	dbg_printf ( "freemem %ld usedmem %ld maxusedmem %ld lowmem %ld cache_discard %ld\n",
+		freemem, usedmem, maxusedmem, lowmem, cache_discard );
+}
